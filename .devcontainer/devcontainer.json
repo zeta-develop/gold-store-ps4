@@ -1,0 +1,17 @@
+{
+  "name": "Gold Store Codespace",
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/android-sdk:1": {
+      "version": "34.0.0"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-gradle",
+        "fwcd.kotlin"
+      ]
+    }
+  }
+}
