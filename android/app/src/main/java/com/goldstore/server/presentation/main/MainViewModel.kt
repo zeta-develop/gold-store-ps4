@@ -155,6 +155,30 @@ class MainViewModel(
         }
     }
 
+    /**
+     * Importa un catálogo remoto FPKGi desde una URL HTTPS validada.
+     */
+    fun importCatalogFromUrl(url: String) {
+        scope.launch {
+            try {
+                if (catalogProvider is FpkgiCatalogProvider) {
+                    val imported = catalogProvider.fetchFromUrl(url)
+                    _uiState.update { current ->
+                        val combined = (current.catalogItems + imported).distinctBy { it.downloadUrl }
+                        current.copy(
+                            catalogItems = combined,
+                            scanStatusMessage = "Se importaron ${imported.size} paquetes compatibles con FPKGi"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(scanStatusMessage = "Error al importar catálogo: ${e.message}")
+                }
+            }
+        }
+    }
+
     fun onTabSelected(tab: NavigationTab) {
         _uiState.update { it.copy(currentTab = tab) }
     }

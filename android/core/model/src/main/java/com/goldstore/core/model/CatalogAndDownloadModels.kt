@@ -8,13 +8,16 @@ data class CatalogItem(
     val titleId: String,
     val name: String,
     val description: String,
-    val category: String, // ej. "Homebrew", "Tool", "Game", "Update"
+    val category: String, // ej. "Homebrew", "Tool", "Game", "Update", "DLC"
     val version: String,
     val sizeBytes: Long,
     val downloadUrl: String,
     val iconUrl: String? = null,
     val sha256: String? = null,
-    val author: String? = null
+    val author: String? = null,
+    val region: String? = null,
+    val minFw: String? = null,
+    val releaseDate: String? = null
 )
 
 /**

@@ -131,7 +131,8 @@ fun MainScreen(
                     catalogItems = uiState.catalogItems,
                     searchQuery = uiState.searchQuery,
                     onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                    onDownloadClick = { viewModel.startDownload(it) }
+                    onDownloadClick = { viewModel.startDownload(it) },
+                    onImportCatalogUrl = { viewModel.importCatalogFromUrl(it) }
                 )
                 NavigationTab.DOWNLOADS -> DownloadsScreen(
                     downloads = uiState.activeDownloads,
@@ -297,25 +298,80 @@ fun StoreScreen(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onDownloadClick: (CatalogItem) -> Unit,
+    onImportCatalogUrl: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var importUrlText by remember { mutableStateOf("") }
+    var showImportDialog by remember { mutableStateOf(false) }
+
     val filtered = remember(catalogItems, searchQuery) {
         if (searchQuery.isBlank()) catalogItems
         else catalogItems.filter {
             it.name.contains(searchQuery, ignoreCase = true) ||
             it.titleId.contains(searchQuery, ignoreCase = true) ||
-            it.category.contains(searchQuery, ignoreCase = true)
+            it.category.contains(searchQuery, ignoreCase = true) ||
+            (it.region?.contains(searchQuery, ignoreCase = true) == true)
         }
     }
 
+    if (showImportDialog) {
+        AlertDialog(
+            onDismissRequest = { showImportDialog = false },
+            title = { Text("Importar Catálogo FPKGi") },
+            text = {
+                Column {
+                    Text(
+                        "Introduce una URL HTTPS de catálogo compatible con FPKGi (esquema DATA o JSON estándar):",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = importUrlText,
+                        onValueChange = { importUrlText = it },
+                        placeholder = { Text("https://example.com/fpkgi_data.json") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (importUrlText.isNotBlank()) {
+                            onImportCatalogUrl(importUrlText.trim())
+                            showImportDialog = false
+                            importUrlText = ""
+                        }
+                    }
+                ) {
+                    Text("Importar")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showImportDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
-        OutHeader("Catálogo Autorizado", "Paquetes homebrew y utilidades PS4 verificadas")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutHeader("Catálogo FPKGi", "${catalogItems.size} paquetes disponibles")
+            Button(onClick = { showImportDialog = true }) {
+                Text("+ URL")
+            }
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
-            placeholder = { Text("Buscar por título o CUSA...") },
+            placeholder = { Text("Buscar por título, CUSA o región...") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
