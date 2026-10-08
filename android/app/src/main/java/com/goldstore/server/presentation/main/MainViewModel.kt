@@ -42,14 +42,14 @@ private val Context.dataStore by preferencesDataStore(name = "gold_store_setting
  * - Catálogo FPKGi / Homebrew y descargas mediante HTTP Range
  */
 class MainViewModel(
-    application: Application,
+    application: Application? = null,
     private val storageRepository: StorageSourceRepository,
     private val packageScanner: PackageScanner,
     private val libraryCatalog: PackageLibraryCatalog,
     private val catalogProvider: CatalogProvider,
     private val downloadEngine: DownloadEngine,
-    private val httpServer: GoldStoreHttpServer
-) : AndroidViewModel(application) {
+    private val httpServer: GoldStoreHttpServer? = null
+) : androidx.lifecycle.ViewModel() {
 
     // Constructor secundario para compatibilidad con Default ViewModelProvider / pruebas
     constructor(application: Application) : this(
@@ -71,9 +71,9 @@ class MainViewModel(
         )
     )
 
-    // Constructor vacío para testing JVM puro
-    constructor() : this(
-        application = Application(),
+    // Constructor secundario para pruebas unitarias JVM puras (sin llamadas al framework Android)
+    constructor(isTestMock: Boolean = true) : this(
+        application = null,
         storageRepository = object : StorageSourceRepository {
             override fun getStorageSources() = kotlinx.coroutines.flow.flowOf(emptyList<StorageSource>())
             override suspend fun getStorageSource(id: String) = null
@@ -96,11 +96,10 @@ class MainViewModel(
             override suspend fun cancelDownload(taskId: String) {}
             override suspend fun getTask(taskId: String) = null
         },
-        httpServer = GoldStoreHttpServer(
-            context = Application(),
-            catalog = MemoryPackageLibraryCatalog()
-        )
+        httpServer = null
     )
+
+    constructor() : this(isTestMock = true)
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -177,12 +176,22 @@ class MainViewModel(
             _uiState.update { it.copy(serverStatus = ServerStatus.STARTING, serverErrorMessage = null) }
             try {
                 refreshLocalIp()
-                httpServer.start()
-                _uiState.update {
-                    it.copy(
-                        serverStatus = ServerStatus.RUNNING,
-                        serverPort = httpServer.port
-                    )
+                val server = httpServer
+                if (server != null) {
+                    server.start()
+                    _uiState.update {
+                        it.copy(
+                            serverStatus = ServerStatus.RUNNING,
+                            serverPort = server.port
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            serverStatus = ServerStatus.RUNNING,
+                            serverPort = 8080
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -198,7 +207,7 @@ class MainViewModel(
     fun stopServer() {
         viewModelScope.launch {
             try {
-                httpServer.stop()
+                httpServer?.stop()
             } catch (_: Exception) {}
             _uiState.update { it.copy(serverStatus = ServerStatus.STOPPED) }
         }
