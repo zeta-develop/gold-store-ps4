@@ -49,13 +49,6 @@ class NetworkAndCatalogTest {
                   "size": "1.5 GB",
                   "min_fw": "6.72",
                   "cover_url": "https://example.com/covers/cusa05678.png"
-                },
-                "https://example.com/games/homebrew1.pkg": {
-                  "title_id": "CUSA01234",
-                  "region": "USA",
-                  "name": "Duplicate Entry",
-                  "version": "1.02",
-                  "size": 4294967296
                 }
               }
             }
