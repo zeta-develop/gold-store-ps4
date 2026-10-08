@@ -33,13 +33,10 @@ class DataStoreStorageSourceRepository(
     }
 
     override suspend fun getStorageSource(id: String): StorageSource? {
-        var found: StorageSource? = null
-        dataStore.data.collect { preferences ->
-            val jsonString = preferences[storageSourcesKey] ?: "[]"
-            found = deserializeSources(jsonString).firstOrNull { it.id == id }
-        }
-        return found
+        val jsonString = dataStore.data.map { it[storageSourcesKey] ?: "[]" }.firstOrNull() ?: "[]"
+        return deserializeSources(jsonString).firstOrNull { it.id == id }
     }
+
 
     override suspend fun addStorageSource(source: StorageSource) {
         dataStore.edit { preferences ->

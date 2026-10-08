@@ -18,8 +18,9 @@ class StorageAndCatalogTest {
     @Test
     fun serialization_roundTrip_preservesSourcesAndMetadata() = runTest {
         val repo = DataStoreStorageSourceRepository(
-            dataStore = TestDataStoreFactory.createInMemory(this)
+            dataStore = TestDataStoreFactory.createInMemory(backgroundScope)
         )
+
 
 
         val sources = listOf(
@@ -58,8 +59,9 @@ class StorageAndCatalogTest {
     @Test
     fun repository_addSource_preventsDuplicateUris() = runTest {
         val repo = DataStoreStorageSourceRepository(
-            dataStore = TestDataStoreFactory.createInMemory(this)
+            dataStore = TestDataStoreFactory.createInMemory(backgroundScope)
         )
+
 
 
         val source1 = StorageSource(
