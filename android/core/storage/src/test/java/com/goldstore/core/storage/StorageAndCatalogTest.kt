@@ -16,10 +16,11 @@ import org.junit.Test
 class StorageAndCatalogTest {
 
     @Test
-    fun serialization_roundTrip_preservesSourcesAndMetadata() {
+    fun serialization_roundTrip_preservesSourcesAndMetadata() = runTest {
         val repo = DataStoreStorageSourceRepository(
-            dataStore = FakePreferencesDataStore()
+            dataStore = TestDataStoreFactory.createInMemory(this)
         )
+
 
         val sources = listOf(
             StorageSource(
@@ -57,8 +58,9 @@ class StorageAndCatalogTest {
     @Test
     fun repository_addSource_preventsDuplicateUris() = runTest {
         val repo = DataStoreStorageSourceRepository(
-            dataStore = FakePreferencesDataStore()
+            dataStore = TestDataStoreFactory.createInMemory(this)
         )
+
 
         val source1 = StorageSource(
             id = "id-1",
