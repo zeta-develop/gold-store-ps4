@@ -67,9 +67,9 @@ class FpkgiCatalogProvider(
         val version = obj.optString("version", "1.00")
         val category = obj.optString("category", "Homebrew")
         val desc = obj.optString("description", "")
-        val iconUrl = obj.optString("iconUrl", obj.optString("icon", null))
-        val sha256 = obj.optString("sha256", null)
-        val author = obj.optString("author", null)
+        val iconUrl = if (obj.has("iconUrl")) obj.getString("iconUrl") else if (obj.has("icon")) obj.getString("icon") else null
+        val sha256 = if (obj.has("sha256")) obj.getString("sha256") else null
+        val author = if (obj.has("author")) obj.getString("author") else null
 
         return CatalogItem(
             id = obj.optString("id", UUID.randomUUID().toString()),

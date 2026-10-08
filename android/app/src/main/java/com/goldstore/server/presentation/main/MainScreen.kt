@@ -649,7 +649,7 @@ fun StorageScreen(
                                 )
                                 Text(
                                     text = when (source.storageType) {
-                                        StorageType.PRIMARY_EXTERNAL -> "Interno"
+                                        StorageType.INTERNAL, StorageType.PRIMARY_EXTERNAL -> "Interno"
                                         StorageType.SD_CARD -> "MicroSD"
                                         StorageType.USB_OTG -> "USB OTG"
                                         StorageType.UNKNOWN -> "Desconocido"
@@ -671,8 +671,9 @@ fun StorageScreen(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            if (source.lastScannedEpochMs != null) {
-                                val dateStr = SimpleDateFormat("HH:mm:ss dd/MM", Locale.getDefault()).format(Date(source.lastScannedEpochMs))
+                            val lastScanned = source.lastScannedEpochMs
+                            if (lastScanned != null) {
+                                val dateStr = SimpleDateFormat("HH:mm:ss dd/MM", Locale.getDefault()).format(Date(lastScanned))
                                 Text(
                                     text = "Último escaneo: $dateStr",
                                     style = MaterialTheme.typography.bodySmall
