@@ -42,7 +42,19 @@ En esta primera etapa del incremento 0.1.2 se han establecido los fundamentos ar
 
 ---
 
-## 2. Archivos Creados o Modificados
+## 2. Validación de Integración Continua (GitHub Actions)
+
+La implementación completa de 0.1.2A y su estructura multi-módulo fue verificada con éxito en GitHub Actions:
+- **Ejecución del Workflow:** [Run #37820018035](https://github.com/zeta-develop/gold-store-ps4/actions/runs/37820018035)
+- **Resultado:** **SUCCESS (en 3m 01s)**
+- **Pruebas Unitarias:** Pasadas con éxito (`:app:testDebugUnitTest`, `:core:storage:testDebugUnitTest`).
+- **Compilación de APK:** Generado exitosamente en `android/app/build/outputs/apk/debug/app-debug.apk`.
+- **Enlace de Descarga APK (Run 37820018035):** [Descargar app-debug.apk](https://github.com/zeta-develop/gold-store-ps4/actions/runs/37820018035/artifacts/11568173849)
+- **Enlace de Descarga Reportes de Tests:** [Descargar unit-test-reports](https://github.com/zeta-develop/gold-store-ps4/actions/runs/37820018035/artifacts/11569620122)
+
+---
+
+## 3. Archivos Creados o Modificados
 
 | Archivo | Tipo | Descripción |
 |---|---|---|
