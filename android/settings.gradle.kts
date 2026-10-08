@@ -23,3 +23,5 @@ rootProject.name = "GoldStore"
 include(":app")
 include(":core:model")
 include(":core:storage")
+include(":core:network")
+
