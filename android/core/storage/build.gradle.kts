@@ -23,6 +23,10 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.documentfile)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
+
