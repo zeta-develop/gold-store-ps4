@@ -48,8 +48,12 @@ class MainViewModel(
     private val libraryCatalog: PackageLibraryCatalog,
     private val catalogProvider: CatalogProvider,
     private val downloadEngine: DownloadEngine,
-    private val httpServer: GoldStoreHttpServer? = null
+    private val httpServer: GoldStoreHttpServer? = null,
+    private val coroutineScope: kotlinx.coroutines.CoroutineScope? = null
 ) : androidx.lifecycle.ViewModel() {
+
+    private val scope: kotlinx.coroutines.CoroutineScope
+        get() = coroutineScope ?: viewModelScope
 
     // Constructor secundario para compatibilidad con Default ViewModelProvider / pruebas
     constructor(application: Application) : this(
@@ -96,7 +100,8 @@ class MainViewModel(
             override suspend fun cancelDownload(taskId: String) {}
             override suspend fun getTask(taskId: String) = null
         },
-        httpServer = null
+        httpServer = null,
+        coroutineScope = kotlinx.coroutines.CoroutineScope(Dispatchers.Unconfined)
     )
 
     constructor() : this(isTestMock = true)
@@ -106,7 +111,7 @@ class MainViewModel(
 
     init {
         // Observar fuentes SAF persistidas
-        viewModelScope.launch {
+        scope.launch {
             storageRepository.getStorageSources().collect { sources ->
                 _uiState.update { current ->
                     current.copy(
@@ -118,7 +123,7 @@ class MainViewModel(
         }
 
         // Observar paquetes indexados en la biblioteca
-        viewModelScope.launch {
+        scope.launch {
             libraryCatalog.observeAllPackages().collect { pkgs ->
                 _uiState.update { current ->
                     current.copy(
@@ -130,7 +135,7 @@ class MainViewModel(
         }
 
         // Observar tareas de descarga
-        viewModelScope.launch {
+        scope.launch {
             downloadEngine.observeTasks().collect { tasks ->
                 _uiState.update { it.copy(activeDownloads = tasks) }
             }
@@ -144,7 +149,7 @@ class MainViewModel(
     }
 
     private fun loadInitialCatalog() {
-        viewModelScope.launch {
+        scope.launch {
             val demoItems = FpkgiCatalogProvider.getDemoCatalog()
             _uiState.update { it.copy(catalogItems = demoItems) }
         }
@@ -172,7 +177,7 @@ class MainViewModel(
     }
 
     fun startServer() {
-        viewModelScope.launch {
+        scope.launch {
             _uiState.update { it.copy(serverStatus = ServerStatus.STARTING, serverErrorMessage = null) }
             try {
                 refreshLocalIp()
@@ -205,7 +210,7 @@ class MainViewModel(
     }
 
     fun stopServer() {
-        viewModelScope.launch {
+        scope.launch {
             try {
                 httpServer?.stop()
             } catch (_: Exception) {}
@@ -214,7 +219,7 @@ class MainViewModel(
     }
 
     fun addStorageSource(treeUri: Uri, displayName: String) {
-        viewModelScope.launch {
+        scope.launch {
             val source = SafUriHelper.createStorageSource(treeUri, displayName)
             storageRepository.addStorageSource(source)
             // Disparar escaneo automático de la nueva fuente agregada
@@ -223,7 +228,7 @@ class MainViewModel(
     }
 
     fun removeStorageSource(sourceId: String) {
-        viewModelScope.launch {
+        scope.launch {
             storageRepository.removeStorageSource(sourceId)
             if (libraryCatalog is MemoryPackageLibraryCatalog) {
                 libraryCatalog.removeSource(sourceId)
@@ -235,7 +240,7 @@ class MainViewModel(
     }
 
     fun scanStorageSource(source: StorageSource) {
-        viewModelScope.launch {
+        scope.launch {
             _uiState.update {
                 it.copy(
                     isScanningStorage = true,
@@ -289,7 +294,7 @@ class MainViewModel(
             return
         }
 
-        viewModelScope.launch {
+        scope.launch {
             val safeFileName = "${item.name.replace("[^a-zA-Z0-9_.-]".toRegex(), "_")}.pkg"
             downloadEngine.enqueueDownload(
                 url = item.downloadUrl,
@@ -305,19 +310,19 @@ class MainViewModel(
     }
 
     fun pauseDownload(taskId: String) {
-        viewModelScope.launch { downloadEngine.pauseDownload(taskId) }
+        scope.launch { downloadEngine.pauseDownload(taskId) }
     }
 
     fun resumeDownload(taskId: String) {
-        viewModelScope.launch { downloadEngine.resumeDownload(taskId) }
+        scope.launch { downloadEngine.resumeDownload(taskId) }
     }
 
     fun cancelDownload(taskId: String) {
-        viewModelScope.launch { downloadEngine.cancelDownload(taskId) }
+        scope.launch { downloadEngine.cancelDownload(taskId) }
     }
 
     fun refreshLocalIp() {
-        viewModelScope.launch {
+        scope.launch {
             val ip = withContext(Dispatchers.IO) {
                 try {
                     val interfaces = NetworkInterface.getNetworkInterfaces()
